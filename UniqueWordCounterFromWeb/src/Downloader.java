@@ -7,12 +7,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class Downloader {
 
-
-    public Downloader() {
+    private static Logger log = Logger.getLogger(Downloader.class.getName());
+    FileHandler fh;
+    public Downloader(FileHandler fh) {
+        this.fh=fh;
+        log.addHandler(fh);
+        log.log(Level.INFO, "Instance of the class is created");
     }
 
 
@@ -21,27 +28,30 @@ public class Downloader {
 
         if (url == null || outputDirPath == null) {
             System.out.println("output directory path is null or url is null ");
-            throw new Exception("Invalid input parameters");
+           Exception e =  new Exception("Invalid input parameters");
+            log.log(Level.SEVERE, "Exception: ",e);
+            throw e;
         }
 
 
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             url = "http://" + url;
+            log.log(Level.INFO, "Added a prefix to the site address");
         }
 
         URL obj = new URL(url);
 
+
         File outputDir = new File(outputDirPath);
         if (outputDir.exists() && outputDir.isFile()) {
-            System.out.println("output directory path is wrong");
+            log.log(Level.INFO, "output directory path is wrong");
             return;
         } else if (!outputDir.exists()) {
             outputDir.mkdirs();
-            System.out.println("Directory created");
+            log.log(Level.INFO, "Directory created");
         }
         Downloader.getWebPage(obj, outputDir);
-        System.out.println("First Page grabbed successfully");
-
+        log.log(Level.INFO, "First Page grabbed successfully");
 
     }
 
@@ -69,20 +79,19 @@ public class Downloader {
                         || status == HttpURLConnection.HTTP_SEE_OTHER) {
 
                 } else {
-                    System.out.println("Unable to get resource mostly 404 " + status);
+                    log.log(Level.INFO, "Unable to get resource mostly 404 " + status);
                     return;
                 }
             }
 
-            System.out.println("Response Code ... " + status);
-
+            log.log(Level.INFO, "Response Code ... " + status);
 
             if (!outputFile.exists()) {
                 outputFile.createNewFile();
             }
 
             if (!outputFile.canWrite()) {
-                System.out.println("Cannot write to file - " + outputFile.getAbsolutePath());
+                log.log(Level.INFO, "Cannot write to file - " + outputFile.getAbsolutePath());
                 return;
             }
 
@@ -106,6 +115,7 @@ public class Downloader {
                     fop.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    log.log(Level.SEVERE, "Exception: ", e);
                 }
 
 
@@ -122,12 +132,14 @@ public class Downloader {
                     fop.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
+                    log.log(Level.SEVERE, "Exception: ", e);
                 }
             }
 
 
         } catch (Exception e) {
-            System.out.println("Excpetion in getting webpage - " + obj);
+
+            log.log(Level.SEVERE, "Excpetion in getting webpage - " + obj);
             e.printStackTrace();
         } finally {
             try {
@@ -142,6 +154,7 @@ public class Downloader {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                log.log(Level.SEVERE, "Exception: ", e);
             }
         }
     }
